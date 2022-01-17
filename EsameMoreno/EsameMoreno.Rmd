@@ -1,0 +1,211 @@
+---
+title: "ESAME FONDAMENTI DI SCIENZA DEI DATI E LABORATORIO"
+author: "Moreno Scozzi"
+output:
+  slidy_presentation:
+    incremental: yes
+  beamer_presentation:
+    incremental: yes
+  ioslides_presentation:
+    css: ./style.css
+    incremental: yes
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Osservazione sui dati riguardanti gli attacchi di cuore e le loro cause.
+
+In seguito alla vicenda accaduta recentemente riguardo al giocatore della Danimarca Christian Eriksen, il quale è svenuto in campo al 43' minuto di Danimarca-Finlandia, colto da un malore, è apparso subito in gravi condizioni, tanto da rendere necessario l'intervento dei sanitari con un massaggio cardiaco durato circa 10 minuti.
+
+L'obiettivo di questo studio è quello di mostrare le cause degli attacchi di cuore e cercare di capire come prevenirli.
+
+```{r include=FALSE}
+library(readr) 
+library(tidyr) 
+library(dplyr) 
+library(stringr) 
+library(ggplot2) 
+library(tidyverse)
+library(ggmap)
+library(scales) 
+library(plotly) 
+library(ggthemes)
+library(lubridate) 
+
+
+heart<-read_csv("C:/Users/utente/OneDrive/Desktop/Fondamenti/EsameMoreno/heart.csv")
+View(heart)
+```
+
+## Importiamo il DataSet
+
+Come prima cosa importiamo il DataSet per analizzare i dati riguardanti età, il sesso, la pressione sanguigna a riposo (in mm Hg), il livello di colesterolo in mg/dl prelevato tramite sensore BMI, la glicemia a digiuno, i risultati elettrocardiografici a riposo, la frequenza cardiaca massima raggiunta, angina indotta dall'esercizio, Depressione ST (fa riferimento ad un'alterazione dell'elettrocardiogramma di superficie) indotta dall'esercizio rispetto al riposo.
+
+## Grafico riguardante il sesso delle persone
+
+Iniziamo con il distinguere i due sessi e analizzare quello più a rischio.
+
+## Grafico riguardante il sesso delle persone
+
+In questo grafico possiamo vedere che il genere maschile (68%) è più soggetto ad attacchi di cuore rispetto al genere femminile (32%).
+
+```{r echo=FALSE}
+dati <- table(heart$sex)
+labelG <- c("Femmina", "Maschio")
+perc<- round(dati/sum(dati)*100)
+labelG <- paste(labelG, perc)
+labelG <- paste(labelG,"%",sep="")
+col = c("plum2", "powderblue")
+pie(dati, labels = labelG, col=col, main="Genere")
+legend(1.2, 0.3, cex = 0.8, legend=labelG, fill = col)
+
+```
+
+## Analisi sesso
+
+Sebbene l'infarto sia una delle principali cause di morte sia per gli uomini che le donne, due pazienti su tre che vanno incontro a problemi cardiaci sono maschi, e in generale questo tipo di patologie colpisce gli uomini dai dieci ai quindici anni prima che le donne. Per molto tempo non si è mai riuscita a dare una spiegazione a ciò, fino a quando uno studio nel 2012 pubblica su The Lancet una relazione nella quale suggerisce che parte della risposta sia da cercare nel cromosoma Y, che definisce il sesso maschile.
+
+## Riguardante il livello di colesterolo
+
+Nel seguente grafico notiamo che il livello del colesterolo compreso tra i 200 e i 300 mg/dl sono a forte rischio di infarto, da ciò possiamo dedurre che bisogna fare attenzione alla percentuale di colesterolo in quanto influisce sulla salute del cuore.
+
+```{r echo=FALSE}
+ggplot(heart, aes(x = chol))+
+        geom_density(fill = "green")+
+        ggtitle("Distribuzione del colesterolo riguardante gli attacchi di cuore")+
+        theme_minimal()  
+
+```
+
+## Riguardante il livello di colesterolo 
+
+Ora guardiamolo con un altro grafico mettendo in relazione il livello di colesterolo e il numero degli attacchi di cuore in base al sesso.
+
+```{r echo=FALSE}
+ggplot(heart, aes(x = chol,fill = factor(sex))) +
+      geom_bar() +    
+      theme(legend.position = "bottom") +
+      labs(title = "Colesterolo e Attacchi di cuore")
+
+```
+
+## Chest pain type
+
+Con il prossimo grafico facciamo una distinzione dei diversi tipi di dolore toracico causato dal cuore.
+
+## Angina
+
+L'angina è dolore toracico o fastidio causato quando il muscolo cardiaco non riceve abbastanza sangue ricco di ossigeno. Inoltre, alcune persone non avvertono alcun dolore ma hanno altri sintomi come mancanza di respiro o affaticamento.
+
+## Chest pain type
+
+Possiamo notare che abbiamo un maggior numero di casi in cui le persone che hanno avuto attacchi di cuore erano asintomatiche (factor(cp) = 0), a seguire riscontriamo una maggioranza di casi riguardo attacchi dovuti ad un'angina atipica (factor(cp) = 2) rispetto ad un'angina tipica (factor(cp) = 1).Pochi sono i casi un cui non si tratta di angina (factor(cp) = 3).
+
+```{r echo=FALSE}
+ggplot(heart, aes(factor(cp),fill = cp))+
+        geom_bar()+
+        ggtitle("Distribuzione Chest Pain Type")+
+        geom_text(aes(label = ..count..), stat = "count", vjust = 1.5, colour = "white")+   
+        theme_minimal()
+```
+
+## Sintomi
+
+Alcuni atleti presentano segnali d'allarme come svenimento o respiro affannoso. Spesso, tuttavia, gli atleti non riconoscono o non riferiscono tali sintomi e il primo segnale è che il soggetto smette improvvisamente di respirare e collassa.
+I sintomi possono essere:
+
+* Dolore toracico
+
+* Sudore
+
+* Dispnea
+
+* Nausea e vomitare
+
+* Tosse o ansare
+
+## Verifica idonetà atleta
+
+Un importante aspetto dell'attività competitiva consiste nel verificare se l'atleta sia in grado di esercitare il proprio giudizio, la propria valutazione libera e indipendente per interrompere l'attività sportiva nel caso sia necessario.
+
+È inoltre importante notare che, a causa delle circostanze particolari e delle pressioni dello sport competitivo in generale, spesso l'atleta non è in grado di interrompere l'attività fisica, anche quando si presentino obiettive necessità mediche di interromperla.
+
+
+## Angina
+
+Quindi una domanda sorge spontanea: "L'angina è in qualche modo collegata nello sport?"
+
+
+## Angina 
+Guardando questo grafico possiamo dedurre di no, in quanto è presente una prevalenza di casi di angina che non sono dovuti ad esercizio fisico (1 = yes; 0 = no).
+Quindi possiamo concludere dicendo che l'esercizio fisico non induce a casi di angina.
+
+```{r echo=FALSE}
+ggplot(heart, aes(factor(exng),fill = exng))+
+        geom_bar()+
+        ggtitle("Angina")+
+        geom_text(aes(label = ..count..), stat = "count", vjust = 1.5, colour = "white")+   
+        theme_minimal()
+
+```
+
+## Cause della morte caridaca improvvisa degli atleti
+
+Generalmente, le cause di morte improvvisa durante l'attività fisica sono molto diverse per gli atleti giovani rispetto a quelli meno giovani. Tuttavia, in tutti gli atleti il decesso può essere provocato da asma, colpo di calore e uso di farmaci dopanti o droghe che causano improvvise alterazioni del ritmo cardiaco.
+
+## Come prevenire attacchi di cuore?
+I comportamenti che possono ridurre il rischio di infarto sono, nel dettaglio:
+
+* alimentazione sana.
+
+* astensione dal fumo.
+
+* controllo del proprio peso forma.
+
+* svolgimento di attività fisica non intensa, moderata
+
+## Distribuzione heart/age/blood
+
+Con questo grafico mettiamo in relazione l'età e la frequenza cardiaca massima raggiunta (thalach).
+Possiamo notare che ha una distribuzione discendente, con l'abbassarsi dell'età dell'individuo aumenta la frequenza cardiaca massima raggiunta, e viceversa.
+
+
+
+```{r echo=FALSE}
+
+y1=ggplot(data=heart,aes(x=thalachh,y=age,col=sex))+
+  geom_point()+geom_smooth(method="lm",se=FALSE)
+
+y2=ggplot(data=heart,aes(x=thalachh,y=trtbps,col=sex))+
+  geom_point()+geom_smooth(method="lm",se=FALSE)
+library(ggpubr)
+ggarrange(y1,ncol=1,nrow=1)
+
+```
+
+## Distribuzione 2
+
+Con lo stesso tipo di grafico, mettiamo ora in relazione la pressione sanguigna a riposo (trestbps) e la frequenza cardiaca massima raggiunta (thalach).
+Notiamo che ha una distribuzione diversa dal grafico precedente, questa risulta omogenea e costante.
+
+```{r echo=FALSE}
+
+
+y2=ggplot(data=heart,aes(x=thalachh,y=trtbps,col=sex))+
+  geom_point()+geom_smooth(method="lm",se=FALSE)
+library(ggpubr)
+ggarrange(y2,ncol=1,nrow=1)
+
+```
+
+## Conclusioni
+
+Quindi, gli attacchi di cuore possono essere prevenuti?
+
+* Diciamo di si, possono essere prevenuti tramite controlli preriodici e la giusta alimentazione in relazione al colesterolo, che abbiamo visto essere molto incisivo.
+
+* Purtroppo, però, non abbiamo la certezza di evitare queste situazioni, però con la giusta attenzione si possono salvare delle vite come, appunto, successo al giocatore.
